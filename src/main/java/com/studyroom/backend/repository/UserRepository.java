@@ -1,7 +1,7 @@
 package com.studyroom.backend.repository;
 
 
-import com.studyroom.backend.model.User;
+import com.studyroom.backend.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

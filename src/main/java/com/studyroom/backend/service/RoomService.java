@@ -4,8 +4,8 @@ import com.studyroom.backend.dto.request.CreateRoomRequest;
 import com.studyroom.backend.dto.response.RoomDTO;
 import com.studyroom.backend.dto.response.UserDTO;
 import com.studyroom.backend.exception.ResourceNotFoundException;
-import com.studyroom.backend.model.StudyRoom;
-import com.studyroom.backend.model.User;
+import com.studyroom.backend.entity.StudyRoom;
+import com.studyroom.backend.entity.User;
 import com.studyroom.backend.repository.StudyRoomRepository;
 import com.studyroom.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;

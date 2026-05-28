@@ -3,7 +3,7 @@ package com.studyroom.backend.service;
 import com.studyroom.backend.dto.request.LoginRequest;
 import com.studyroom.backend.dto.request.RegisterRequest;
 import com.studyroom.backend.dto.response.AuthResponse;
-import com.studyroom.backend.model.User;
+import com.studyroom.backend.entity.User;
 import com.studyroom.backend.repository.UserRepository;
 import com.studyroom.backend.security.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;

@@ -1,8 +1,8 @@
 package com.studyroom.backend.repository;
 
 
-import com.studyroom.backend.model.StudyRoom;
-import com.studyroom.backend.model.User;
+import com.studyroom.backend.entity.StudyRoom;
+import com.studyroom.backend.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

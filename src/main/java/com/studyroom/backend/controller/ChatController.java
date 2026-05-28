@@ -2,7 +2,7 @@ package com.studyroom.backend.controller;
 
 import com.studyroom.backend.dto.request.ChatMessageRequest;
 import com.studyroom.backend.dto.response.ChatMessageDTO;
-import com.studyroom.backend.model.ChatMessage;
+import com.studyroom.backend.entity.ChatMessage;
 import com.studyroom.backend.service.ChatService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -10,8 +10,6 @@ import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;

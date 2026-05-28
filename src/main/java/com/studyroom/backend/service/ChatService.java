@@ -2,9 +2,9 @@ package com.studyroom.backend.service;
 
 import com.studyroom.backend.dto.response.ChatMessageDTO;
 import com.studyroom.backend.exception.ResourceNotFoundException;
-import com.studyroom.backend.model.ChatMessage;
-import com.studyroom.backend.model.StudyRoom;
-import com.studyroom.backend.model.User;
+import com.studyroom.backend.entity.ChatMessage;
+import com.studyroom.backend.entity.StudyRoom;
+import com.studyroom.backend.entity.User;
 import com.studyroom.backend.repository.ChatMessageRepository;
 import com.studyroom.backend.repository.StudyRoomRepository;
 import com.studyroom.backend.repository.UserRepository;
