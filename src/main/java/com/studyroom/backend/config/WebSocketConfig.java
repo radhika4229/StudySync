@@ -1,6 +1,5 @@
 package com.studyroom.backend.config;
 
-import com.studyroom.backend.security.WebSocketAuthInterceptor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.ChannelRegistration;
