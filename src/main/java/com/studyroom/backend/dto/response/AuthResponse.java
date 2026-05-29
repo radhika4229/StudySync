@@ -1,18 +1,12 @@
 package com.studyroom.backend.dto.response;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder
+@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class AuthResponse {
-    private String token;
-    private String username;
-    private String email;
-    private Long userId;
-    private String avatarColor;
+    private String accessToken;
+    private String refreshToken;
+    private String tokenType = "Bearer";
+    private UserResponse user;
 }
+

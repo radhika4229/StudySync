@@ -1,6 +1,6 @@
 package com.studyroom.backend.service;
 
-import com.studyroom.backend.dto.response.ChatMessageDTO;
+import com.studyroom.backend.dto.response.ChatMessageResponse;
 import com.studyroom.backend.exception.ResourceNotFoundException;
 import com.studyroom.backend.entity.ChatMessage;
 import com.studyroom.backend.entity.StudyRoom;
@@ -24,8 +24,8 @@ public class ChatService {
     private final UserRepository userRepository;
 
     @Transactional
-    public ChatMessageDTO saveMessage(Long roomId, String content,
-                                      String senderEmail, ChatMessage.MessageType type) {
+    public ChatMessageResponse saveMessage(Long roomId, String content,
+                                           String senderEmail, ChatMessage.MessageType type) {
         User sender = userRepository.findByEmail(senderEmail)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         StudyRoom room = roomRepository.findById(roomId)
@@ -42,15 +42,15 @@ public class ChatService {
         return mapToDTO(message);
     }
 
-    public List<ChatMessageDTO> getRoomMessages(Long roomId) {
+    public List<ChatMessageResponse> getRoomMessages(Long roomId) {
         StudyRoom room = roomRepository.findById(roomId)
                 .orElseThrow(() -> new ResourceNotFoundException("Room not found"));
         return chatMessageRepository.findTop50ByRoomOrderByCreatedAtAsc(room)
                 .stream().map(this::mapToDTO).collect(Collectors.toList());
     }
 
-    public ChatMessageDTO mapToDTO(ChatMessage m) {
-        return ChatMessageDTO.builder()
+    public ChatMessageResponse mapToDTO(ChatMessage m) {
+        return ChatMessageResponse.builder()
                 .id(m.getId())
                 .content(m.getContent())
                 .senderUsername(m.getSender().getUsername())

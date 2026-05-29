@@ -1,9 +1,11 @@
 package com.studyroom.backend.dto.request;
 
-import lombok.Data;
+import com.studyroom.backend.enums.MessageType;
+import lombok.*;
 
-@Data
+@Getter @Setter @NoArgsConstructor @AllArgsConstructor
 public class ChatMessageRequest {
     private String content;
-    private String type;
+    private MessageType type = MessageType.TEXT;
+    private String replyToMessageId;
 }

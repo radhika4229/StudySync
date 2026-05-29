@@ -1,7 +1,6 @@
 package com.studyroom.backend.controller;
 
 import com.studyroom.backend.dto.request.CreateRoomRequest;
-import com.studyroom.backend.dto.response.RoomDTO;
 import com.studyroom.backend.service.RoomService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

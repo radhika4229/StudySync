@@ -1,8 +1,6 @@
 package com.studyroom.backend.service;
 
 import com.studyroom.backend.dto.request.CreateRoomRequest;
-import com.studyroom.backend.dto.response.RoomDTO;
-import com.studyroom.backend.dto.response.UserDTO;
 import com.studyroom.backend.exception.ResourceNotFoundException;
 import com.studyroom.backend.entity.StudyRoom;
 import com.studyroom.backend.entity.User;

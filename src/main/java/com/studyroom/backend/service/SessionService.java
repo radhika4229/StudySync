@@ -1,7 +1,6 @@
 package com.studyroom.backend.service;
 
-import com.studyroom.backend.dto.response.DashboardStatsDTO;
-import com.studyroom.backend.dto.response.SessionDTO;
+import com.studyroom.backend.dto.response.SessionResponse;
 import com.studyroom.backend.enums.SessionStatus;
 import com.studyroom.backend.exception.ResourceNotFoundException;
 import com.studyroom.backend.entity.StudyRoom;
@@ -75,7 +74,7 @@ public class SessionService {
                 .stream().map(this::mapToDTO).collect(Collectors.toList());
     }
 
-    public DashboardStatsDTO getUserStats(String email) {
+    public SessionResponse getUserStats(String email) {
         User user = getUserByEmail(email);
         Long totalMinutes = sessionRepository.getTotalStudyMinutesByUser(user);
         Long completedSessions = sessionRepository.getCompletedSessionCountByUser(user);
@@ -83,7 +82,7 @@ public class SessionService {
                 .findByUserOrderByCreatedAtDesc(user)
                 .stream().limit(5).map(this::mapToDTO).collect(Collectors.toList());
 
-        return DashboardStatsDTO.builder()
+        return SessionResponse.builder()
                 .totalStudyMinutes(totalMinutes)
                 .totalHours(totalMinutes / 60)
                 .completedSessions(completedSessions)

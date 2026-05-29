@@ -1,7 +1,6 @@
 package com.studyroom.backend.controller;
 
-import com.studyroom.backend.dto.response.DashboardStatsDTO;
-import com.studyroom.backend.dto.response.SessionDTO;
+import com.studyroom.backend.dto.response.SessionResponse;
 import com.studyroom.backend.service.SessionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -42,7 +41,7 @@ public class SessionController {
     }
 
     @GetMapping("/stats")
-    public ResponseEntity<DashboardStatsDTO> getStats(
+    public ResponseEntity<SessionResponse> getStats(
             @AuthenticationPrincipal UserDetails userDetails) {
         return ResponseEntity.ok(
                 sessionService.getUserStats(userDetails.getUsername()));
