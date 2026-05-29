@@ -3,33 +3,40 @@ package com.studyroom.backend.service;
 import com.studyroom.backend.dto.request.LoginRequest;
 import com.studyroom.backend.dto.request.RegisterRequest;
 import com.studyroom.backend.dto.response.AuthResponse;
+import com.studyroom.backend.entity.RefreshToken;
 import com.studyroom.backend.entity.User;
+import com.studyroom.backend.enums.AuthProvider;
+import com.studyroom.backend.enums.Role;
+import com.studyroom.backend.mappers.UserMapper;
+import com.studyroom.backend.repository.RefreshTokenRepository;
 import com.studyroom.backend.repository.UserRepository;
 import com.studyroom.backend.security.JwtTokenProvider;
+import com.studyroom.backend.security.UserPrincipal;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Random;
+import java.time.Instant;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AuthService {
 
     private final UserRepository userRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
     private final PasswordEncoder passwordEncoder;
-    private final JwtTokenProvider jwtTokenProvider;
-    private final AuthenticationManager authenticationManager;
+    private final JwtTokenProvider tokenProvider;
+    private final AuthenticationManager authManager;
+    private final UserMapper userMapper;
 
-    private static final List<String> AVATAR_COLORS = List.of(
-            "#6366f1", "#8b5cf6", "#ec4899", "#f43f5e",
-            "#f97316", "#eab308", "#22c55e", "#14b8a6"
-    );
-
+    @Transactional
     public AuthResponse register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new RuntimeException("Email already registered");
@@ -38,43 +45,80 @@ public class AuthService {
             throw new RuntimeException("Username already taken");
         }
 
-        String color = AVATAR_COLORS.get(new Random().nextInt(AVATAR_COLORS.size()));
-
         User user = User.builder()
                 .username(request.getUsername())
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .avatarColor(color)
+                .fullName(request.getFullName())
+                .provider(AuthProvider.LOCAL)
+                .role(Role.ROLE_USER)
+                .emailVerified(false)
                 .build();
 
-        userRepository.save(user);
-        String token = jwtTokenProvider.generateToken(user.getEmail());
+        user = userRepository.save(user);
+        String token = tokenProvider.generateTokenFromUserId(user.getId());
+        String refreshToken = createRefreshToken(user);
 
         return AuthResponse.builder()
-                .token(token)
-                .username(user.getUsername())
-                .email(user.getEmail())
-                .userId(user.getId())
-                .avatarColor(user.getAvatarColor())
+                .accessToken(token)
+                .refreshToken(refreshToken)
+                .user(userMapper.toResponse(user))
                 .build();
     }
 
     public AuthResponse login(LoginRequest request) {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.getEmail(), request.getPassword()));
-
-        User user = userRepository.findByEmail(request.getEmail())
+        Authentication authentication = authManager.authenticate(
+                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
+        );
+        UserPrincipal principal = (UserPrincipal) authentication.getPrincipal();
+        User user = userRepository.findById(principal.getId())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        String token = jwtTokenProvider.generateToken(user.getEmail());
+        String token = tokenProvider.generateToken(authentication);
+        String refreshToken = createRefreshToken(user);
 
         return AuthResponse.builder()
-                .token(token)
-                .username(user.getUsername())
-                .email(user.getEmail())
-                .userId(user.getId())
-                .avatarColor(user.getAvatarColor())
+                .accessToken(token)
+                .refreshToken(refreshToken)
+                .user(userMapper.toResponse(user))
                 .build();
+    }
+
+    @Transactional
+    public AuthResponse refreshToken(String token) {
+        RefreshToken refreshToken = refreshTokenRepository.findByToken(token)
+                .orElseThrow(() -> new RuntimeException("Refresh token not found"));
+
+        if (refreshToken.getExpiryDate().isBefore(Instant.now())) {
+            refreshTokenRepository.delete(refreshToken);
+            throw new RuntimeException("Refresh token expired. Please login again.");
+        }
+
+        String newAccessToken = tokenProvider.generateTokenFromUserId(
+                refreshToken.getUser().getId());
+
+        return AuthResponse.builder()
+                .accessToken(newAccessToken)
+                .refreshToken(token)
+                .user(userMapper.toResponse(refreshToken.getUser()))
+                .build();
+    }
+
+    @Transactional
+    public void logout(String userId) {
+        userRepository.findById(userId).ifPresent(user ->
+                refreshTokenRepository.deleteByUser(user));
+    }
+
+    private String createRefreshToken(User user) {
+        refreshTokenRepository.findByUser(user).ifPresent(refreshTokenRepository::delete);
+
+        RefreshToken refreshToken = RefreshToken.builder()
+                .user(user)
+                .token(UUID.randomUUID().toString())
+                .expiryDate(Instant.now().plusMillis(604800000L))
+                .build();
+
+        return refreshTokenRepository.save(refreshToken).getToken();
     }
 }

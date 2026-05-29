@@ -1,11 +1,12 @@
 package com.studyroom.backend.controller;
 
+import com.studyroom.backend.dto.response.ApiResponse;
 import com.studyroom.backend.dto.response.SessionResponse;
-import com.studyroom.backend.service.SessionService;
+import com.studyroom.backend.security.UserPrincipal;
+import com.studyroom.backend.service.StudySessionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,35 +16,43 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SessionController {
 
-    private final SessionService sessionService;
+    private final StudySessionService sessionService;
 
-    @PostMapping("/start")
-    public ResponseEntity<SessionDTO> startSession(
-            @RequestParam Long roomId,
-            @AuthenticationPrincipal UserDetails userDetails) {
-        return ResponseEntity.ok(
-                sessionService.startSession(roomId, userDetails.getUsername()));
+    @PostMapping("/rooms/{roomId}/start")
+    public ResponseEntity<ApiResponse<SessionResponse>> startSession(
+            @AuthenticationPrincipal UserPrincipal user,
+            @PathVariable String roomId) {
+        return ResponseEntity.ok(ApiResponse.success(
+                "Session started", sessionService.startSession(user.getId(), roomId)));
     }
 
-    @PostMapping("/{sessionId}/end")
-    public ResponseEntity<SessionDTO> endSession(
-            @PathVariable Long sessionId,
-            @AuthenticationPrincipal UserDetails userDetails) {
-        return ResponseEntity.ok(
-                sessionService.endSession(sessionId, userDetails.getUsername()));
+    @PutMapping("/{sessionId}/end")
+    public ResponseEntity<ApiResponse<SessionResponse>> endSession(
+            @AuthenticationPrincipal UserPrincipal user,
+            @PathVariable String sessionId,
+            @RequestParam(required = false) String notes) {
+        return ResponseEntity.ok(ApiResponse.success(
+                "Session ended", sessionService.endSession(user.getId(), sessionId, notes)));
     }
 
-    @GetMapping("/history")
-    public ResponseEntity<List<SessionDTO>> getHistory(
-            @AuthenticationPrincipal UserDetails userDetails) {
-        return ResponseEntity.ok(
-                sessionService.getUserSessionHistory(userDetails.getUsername()));
+    @PostMapping("/{sessionId}/join")
+    public ResponseEntity<ApiResponse<SessionResponse>> joinSession(
+            @AuthenticationPrincipal UserPrincipal user,
+            @PathVariable String sessionId) {
+        return ResponseEntity.ok(ApiResponse.success(
+                sessionService.joinSession(user.getId(), sessionId)));
     }
 
-    @GetMapping("/stats")
-    public ResponseEntity<SessionResponse> getStats(
-            @AuthenticationPrincipal UserDetails userDetails) {
-        return ResponseEntity.ok(
-                sessionService.getUserStats(userDetails.getUsername()));
+    @GetMapping("/rooms/{roomId}/active")
+    public ResponseEntity<ApiResponse<SessionResponse>> getActiveSession(
+            @PathVariable String roomId) {
+        return ResponseEntity.ok(ApiResponse.success(
+                sessionService.getActiveSession(roomId).orElse(null)));
+    }
+
+    @GetMapping("/rooms/{roomId}")
+    public ResponseEntity<ApiResponse<List<SessionResponse>>> getRoomSessions(
+            @PathVariable String roomId) {
+        return ResponseEntity.ok(ApiResponse.success(sessionService.getRoomSessions(roomId)));
     }
 }

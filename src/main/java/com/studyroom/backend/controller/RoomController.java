@@ -1,12 +1,14 @@
 package com.studyroom.backend.controller;
 
 import com.studyroom.backend.dto.request.CreateRoomRequest;
-import com.studyroom.backend.service.RoomService;
+import com.studyroom.backend.dto.response.ApiResponse;
+import com.studyroom.backend.dto.response.RoomResponse;
+import com.studyroom.backend.security.UserPrincipal;
+import com.studyroom.backend.service.StudyRoomService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,41 +18,57 @@ import java.util.List;
 @RequiredArgsConstructor
 public class RoomController {
 
-    private final RoomService roomService;
+    private final StudyRoomService roomService;
 
     @PostMapping
-    public ResponseEntity<RoomDTO> createRoom(
-            @Valid @RequestBody CreateRoomRequest request,
-            @AuthenticationPrincipal UserDetails userDetails) {
-        return ResponseEntity.ok(
-                roomService.createRoom(request, userDetails.getUsername()));
-    }
-
-    @PostMapping("/join/{inviteCode}")
-    public ResponseEntity<RoomDTO> joinRoom(
-            @PathVariable String inviteCode,
-            @AuthenticationPrincipal UserDetails userDetails) {
-        return ResponseEntity.ok(
-                roomService.joinByInviteCode(inviteCode, userDetails.getUsername()));
+    public ResponseEntity<ApiResponse<RoomResponse>> createRoom(
+            @AuthenticationPrincipal UserPrincipal user,
+            @Valid @RequestBody CreateRoomRequest request) {
+        return ResponseEntity.ok(ApiResponse.success(
+                "Room created", roomService.createRoom(user.getId(), request)));
     }
 
     @GetMapping
-    public ResponseEntity<List<RoomDTO>> getMyRooms(
-            @AuthenticationPrincipal UserDetails userDetails) {
-        return ResponseEntity.ok(
-                roomService.getRoomsForUser(userDetails.getUsername()));
+    public ResponseEntity<ApiResponse<List<RoomResponse>>> getPublicRooms() {
+        return ResponseEntity.ok(ApiResponse.success(roomService.getPublicRooms()));
+    }
+
+    @GetMapping("/my")
+    public ResponseEntity<ApiResponse<List<RoomResponse>>> getMyRooms(
+            @AuthenticationPrincipal UserPrincipal user) {
+        return ResponseEntity.ok(ApiResponse.success(roomService.getUserRooms(user.getId())));
     }
 
     @GetMapping("/{roomId}")
-    public ResponseEntity<RoomDTO> getRoomById(@PathVariable Long roomId) {
-        return ResponseEntity.ok(roomService.getRoomById(roomId));
+    public ResponseEntity<ApiResponse<RoomResponse>> getRoom(@PathVariable String roomId) {
+        return ResponseEntity.ok(ApiResponse.success(roomService.getRoomById(roomId)));
     }
 
-    @DeleteMapping("/{roomId}")
-    public ResponseEntity<Void> deleteRoom(
-            @PathVariable Long roomId,
-            @AuthenticationPrincipal UserDetails userDetails) {
-        roomService.deleteRoom(roomId, userDetails.getUsername());
-        return ResponseEntity.noContent().build();
+    @GetMapping("/code/{roomCode}")
+    public ResponseEntity<ApiResponse<RoomResponse>> getRoomByCode(@PathVariable String roomCode) {
+        return ResponseEntity.ok(ApiResponse.success(roomService.getRoomByCode(roomCode)));
+    }
+
+    @PostMapping("/{roomCode}/join")
+    public ResponseEntity<ApiResponse<RoomResponse>> joinRoom(
+            @AuthenticationPrincipal UserPrincipal user,
+            @PathVariable String roomCode,
+            @RequestParam(required = false) String password) {
+        return ResponseEntity.ok(ApiResponse.success(
+                "Joined room", roomService.joinRoom(user.getId(), roomCode, password)));
+    }
+
+    @DeleteMapping("/{roomId}/leave")
+    public ResponseEntity<ApiResponse<Void>> leaveRoom(
+            @AuthenticationPrincipal UserPrincipal user,
+            @PathVariable String roomId) {
+        roomService.leaveRoom(user.getId(), roomId);
+        return ResponseEntity.ok(ApiResponse.success("Left room", null));
+    }
+
+    @GetMapping("/recommend")
+    public ResponseEntity<ApiResponse<List<RoomResponse>>> getRecommended(
+            @RequestParam String subject) {
+        return ResponseEntity.ok(ApiResponse.success(roomService.getRecommendedRooms(subject)));
     }
 }
