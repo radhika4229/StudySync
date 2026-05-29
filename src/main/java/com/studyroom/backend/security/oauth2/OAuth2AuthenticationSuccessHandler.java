@@ -2,6 +2,7 @@ package com.studyroom.backend.security.oauth2;
 
 
 
+import com.studyroom.backend.config.AppProperties;
 import com.studyroom.backend.security.JwtTokenProvider;
 import jakarta.servlet.http.*;
 import lombok.RequiredArgsConstructor;
