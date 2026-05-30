@@ -5,6 +5,7 @@ import com.studyroom.backend.dto.request.RegisterRequest;
 import com.studyroom.backend.dto.response.ApiResponse;
 import com.studyroom.backend.dto.response.AuthResponse;
 import com.studyroom.backend.dto.response.UserResponse;
+import com.studyroom.backend.security.UserPrincipal;
 import com.studyroom.backend.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -36,6 +37,8 @@ public class AuthController {
     @PostMapping("/refresh")
     public ResponseEntity<ApiResponse<AuthResponse>> refresh(
             @RequestParam String refreshToken) {
+        System.out.println("CONTROLLER TOKEN = [" + refreshToken + "]");
+        refreshToken = refreshToken.trim();
         AuthResponse response = authService.refreshToken(refreshToken);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
@@ -50,9 +53,9 @@ public class AuthController {
     @GetMapping("/me")
     public ResponseEntity<ApiResponse<UserResponse>> getCurrentUser(
             @AuthenticationPrincipal UserPrincipal principal) {
-        // userMapper injected via service
+
         return ResponseEntity.ok(ApiResponse.success(null));
-        // You'd inject UserMapper here and return proper response
+
     }
 }
 

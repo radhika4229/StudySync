@@ -13,7 +13,7 @@ public class RoomMapper {
 
     public RoomResponse toResponse(StudyRoom room) {
         return RoomResponse.builder()
-                .id(room.getId())
+                .id(String.valueOf(room.getId()))
                 .name(room.getName())
                 .description(room.getDescription())
                 .roomCode(room.getRoomCode())

@@ -16,7 +16,7 @@ import java.util.*;
 @AllArgsConstructor
 public class UserPrincipal implements UserDetails, OAuth2User {
 
-    private String id;
+    private Long id;
     private String email;
     private String username;
     private String password;

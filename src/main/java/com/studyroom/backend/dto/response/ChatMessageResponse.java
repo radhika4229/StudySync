@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class ChatMessageResponse {
-    private String id;
+    private Long id;
     private String roomId;
     private UserResponse sender;
     private String content;

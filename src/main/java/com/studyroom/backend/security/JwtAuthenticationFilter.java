@@ -24,6 +24,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final CustomUserDetailsService userDetailsService;
 
     @Override
+
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain)
@@ -31,13 +32,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             String jwt = getJwtFromRequest(request);
             if (StringUtils.hasText(jwt) && tokenProvider.validateToken(jwt)) {
-                String userId = tokenProvider.getUserIdFromToken(jwt);
+                Long userId = tokenProvider.getUserIdFromToken(jwt);
                 UserDetails userDetails = userDetailsService.loadUserById(userId);
                 UsernamePasswordAuthenticationToken authentication =
                         new UsernamePasswordAuthenticationToken(
                                 userDetails, null, userDetails.getAuthorities());
                 authentication.setDetails(
                         new WebAuthenticationDetailsSource().buildDetails(request));
+                System.out.println("Authenticated user = " + userDetails.getUsername());
+                System.out.println("Authentication set successfully");
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
         } catch (Exception ex) {
@@ -48,6 +51,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private String getJwtFromRequest(HttpServletRequest request) {
         String bearerToken = request.getHeader("Authorization");
+
+        System.out.println("Authorization Header = " + bearerToken);
         if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
             return bearerToken.substring(7);
         }

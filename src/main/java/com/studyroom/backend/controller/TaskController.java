@@ -43,7 +43,7 @@ public class TaskController {
 
         User assignee = null;
         if (request.getAssignedToId() != null) {
-            assignee = userRepository.findById(request.getAssignedToId()).orElse(null);
+            assignee = userRepository.findById(Long.valueOf(request.getAssignedToId())).orElse(null);
         }
 
         Task task = Task.builder()

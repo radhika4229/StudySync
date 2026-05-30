@@ -23,7 +23,7 @@ public class SessionController {
             @AuthenticationPrincipal UserPrincipal user,
             @PathVariable String roomId) {
         return ResponseEntity.ok(ApiResponse.success(
-                "Session started", sessionService.startSession(user.getId(), roomId)));
+                "Session started", sessionService.startSession(user.getId(), Long.parseLong(roomId))));
     }
 
     @PutMapping("/{sessionId}/end")
@@ -32,7 +32,7 @@ public class SessionController {
             @PathVariable String sessionId,
             @RequestParam(required = false) String notes) {
         return ResponseEntity.ok(ApiResponse.success(
-                "Session ended", sessionService.endSession(user.getId(), sessionId, notes)));
+                "Session ended", sessionService.endSession(Long.valueOf(String.valueOf(user.getId())), sessionId, notes)));
     }
 
     @PostMapping("/{sessionId}/join")
@@ -40,14 +40,14 @@ public class SessionController {
             @AuthenticationPrincipal UserPrincipal user,
             @PathVariable String sessionId) {
         return ResponseEntity.ok(ApiResponse.success(
-                sessionService.joinSession(user.getId(), sessionId)));
+                sessionService.joinSession(Long.valueOf(Long.valueOf(String.valueOf(user.getId()))), sessionId)));
     }
 
     @GetMapping("/rooms/{roomId}/active")
     public ResponseEntity<ApiResponse<SessionResponse>> getActiveSession(
             @PathVariable String roomId) {
         return ResponseEntity.ok(ApiResponse.success(
-                sessionService.getActiveSession(roomId).orElse(null)));
+                sessionService.getActiveSession(Long.valueOf(roomId)).orElse(null)));
     }
 
     @GetMapping("/rooms/{roomId}")

@@ -15,8 +15,8 @@ import java.util.*;
 public class User {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @Column(unique = true, nullable = false)
     private String email;
@@ -56,12 +56,15 @@ public class User {
     private int totalSessionsCompleted = 0;
 
     @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @Builder.Default
     private List<StudyRoom> ownedRooms = new ArrayList<>();
 
     @ManyToMany(mappedBy = "members", fetch = FetchType.LAZY)
+    @Builder.Default
     private Set<StudyRoom> joinedRooms = new HashSet<>();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @Builder.Default
     private List<Badge> badges = new ArrayList<>();
 
     @CreationTimestamp

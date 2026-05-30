@@ -7,7 +7,7 @@ import java.util.List;
 
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class SessionResponse {
-    private String id;
+    private Long id;
     private String roomId;
     private UserResponse startedBy;
     private LocalDateTime startTime;

@@ -1,5 +1,5 @@
 package com.studyroom.backend.security;
-
+import com.studyroom.backend.entity.User;
 import com.studyroom.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.*;
@@ -21,7 +21,7 @@ public class CustomUserDetailsService implements UserDetailsService {
     }
 
     @Transactional
-    public UserDetails loadUserById(String id) {
+    public UserDetails loadUserById(Long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + id));
         return UserPrincipal.create(user);

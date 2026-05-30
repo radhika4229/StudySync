@@ -27,12 +27,13 @@ public class ChatService {
     private final ChatMessageRepository messageRepository;
     private final StudyRoomRepository roomRepository;
     private final UserRepository userRepository;
-    private final AIService aiService;
+
     private final SimpMessagingTemplate messagingTemplate;
     private final MessageMapper messageMapper;
+    private final AIService aiService;
 
     @Transactional
-    public ChatMessageResponse sendMessage(String userId, String roomId,
+    public ChatMessageResponse sendMessage(Long userId, String roomId,
                                            ChatMessageRequest request) {
         User sender = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -63,7 +64,7 @@ public class ChatService {
         return response;
     }
 
-    private void handleAIMessage(String userId, StudyRoom room,
+    private void handleAIMessage(Long userId, StudyRoom room,
                                  User sender, String query) {
         // Async AI response
         String aiResponse = aiService.processQuery(query, room.getSubject());

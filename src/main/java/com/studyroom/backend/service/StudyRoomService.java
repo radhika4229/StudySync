@@ -8,6 +8,9 @@ import com.studyroom.backend.entity.User;
 import com.studyroom.backend.enums.BadgeType;
 import com.studyroom.backend.enums.MessageType;
 import com.studyroom.backend.enums.RoomStatus;
+import com.studyroom.backend.enums.RoomVisibility;
+import com.studyroom.backend.mappers.RoomMapper;
+import com.studyroom.backend.mappers.UserMapper;
 import com.studyroom.backend.repository.ChatMessageRepository;
 import com.studyroom.backend.repository.StudyRoomRepository;
 import com.studyroom.backend.repository.UserRepository;
@@ -35,7 +38,7 @@ public class StudyRoomService {
     private final RoomMapper roomMapper;
 
     @Transactional
-    public RoomResponse createRoom(String userId, CreateRoomRequest request) {
+    public RoomResponse createRoom(Long userId, CreateRoomRequest request) {
         User owner = findUser(userId);
 
         String roomCode = generateUniqueRoomCode();
@@ -66,7 +69,7 @@ public class StudyRoomService {
     }
 
     @Transactional
-    public RoomResponse joinRoom(String userId, String roomCode, String password) {
+    public RoomResponse joinRoom(Long userId, String roomCode, String password) {
         User user = findUser(userId);
         StudyRoom room = roomRepository.findByRoomCode(roomCode)
                 .orElseThrow(() -> new RuntimeException("Room not found"));
@@ -94,9 +97,9 @@ public class StudyRoomService {
     }
 
     @Transactional
-    public void leaveRoom(String userId, String roomId) {
+    public void leaveRoom(Long userId, String roomId) {
         User user = findUser(userId);
-        StudyRoom room = findRoom(roomId);
+        StudyRoom room = findRoom(Long.valueOf(roomId));
 
         room.getMembers().remove(user);
         roomRepository.save(room);
@@ -106,18 +109,18 @@ public class StudyRoomService {
 
     public List<RoomResponse> getPublicRooms() {
         return roomRepository.findByVisibilityAndStatus(
-                        StudyRoom.RoomVisibility.PUBLIC, StudyRoom.RoomStatus.ACTIVE)
+                        RoomVisibility.PUBLIC,RoomStatus.ACTIVE)
                 .stream().map(roomMapper::toResponse).toList();
     }
 
-    public List<RoomResponse> getUserRooms(String userId) {
+    public List<RoomResponse> getUserRooms(Long userId) {
         User user = findUser(userId);
-        List<StudyRoom> rooms = roomRepository.findRoomsByMemberId(userId);
+        List<StudyRoom> rooms = roomRepository.findRoomsByMemberId(String.valueOf(userId));
         return rooms.stream().map(roomMapper::toResponse).toList();
     }
 
     public RoomResponse getRoomById(String roomId) {
-        return roomMapper.toResponse(findRoom(roomId));
+        return roomMapper.toResponse(findRoom(Long.valueOf(roomId)));
     }
 
     public RoomResponse getRoomByCode(String roomCode) {
@@ -133,7 +136,7 @@ public class StudyRoomService {
 
     private void broadcastSystemMessage(StudyRoom room, String text) {
         ChatMessageResponse message = ChatMessageResponse.builder()
-                .roomId(room.getId())
+                .roomId(String.valueOf(room.getId()))
                 .content(text)
                 .type(MessageType.SYSTEM)
                 .build();
@@ -148,13 +151,13 @@ public class StudyRoomService {
         return code;
     }
 
-    private User findUser(String userId) {
+    private User findUser(Long userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
     }
 
-    private StudyRoom findRoom(String roomId) {
-        return roomRepository.findById(roomId)
+    private StudyRoom findRoom(Long  id) {
+        return roomRepository.findById(String.valueOf(id))
                 .orElseThrow(() -> new RuntimeException("Room not found"));
     }
 }

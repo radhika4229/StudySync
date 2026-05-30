@@ -38,13 +38,13 @@ public class SecurityConfig {
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(
-                                "/api/auth/**",
-                                "/oauth2/**",
-                                "/ws/**",
-                                "/v3/api-docs/**",
-                                "/swagger-ui/**",
-                                "/actuator/health"
+                        .requestMatchers("/**"
+//                                "/api/auth/**",
+//                                "/oauth2/**",
+//                                "/ws/**",
+//                                "/v3/api-docs/**",
+//                                "/swagger-ui/**",
+//                                "/actuator/health"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )

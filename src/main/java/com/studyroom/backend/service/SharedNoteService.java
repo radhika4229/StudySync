@@ -32,7 +32,7 @@ public class SharedNoteService {
     private final SimpMessagingTemplate messagingTemplate;
 
     @Transactional
-    public SharedNote createNote(String userId, String roomId, CreateNoteRequest request) {
+    public SharedNote createNote(Long userId, String roomId, CreateNoteRequest request) {
         User user = findUser(userId);
         StudyRoom room = findRoom(roomId);
 
@@ -56,7 +56,7 @@ public class SharedNoteService {
     }
 
     @Transactional
-    public SharedNote updateNote(String userId, String noteId, String content) {
+    public SharedNote updateNote( Long userId, String noteId, String content) {
         User user = findUser(userId);
         SharedNote note = noteRepository.findById(noteId)
                 .orElseThrow(() -> new RuntimeException("Note not found"));
@@ -107,7 +107,7 @@ public class SharedNoteService {
         }
     }
 
-    private User findUser(String id) {
+    private User findUser( Long id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
     }

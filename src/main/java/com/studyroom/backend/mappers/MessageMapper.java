@@ -13,8 +13,8 @@ public class MessageMapper {
 
     public ChatMessageResponse toResponse(ChatMessage msg) {
         return ChatMessageResponse.builder()
-                .id(msg.getId())
-                .roomId(msg.getRoom().getId())
+                .id(Long.valueOf(msg.getId()))
+                .roomId(String.valueOf(msg.getRoom().getId()))
                 .sender(msg.getSender() != null ? userMapper.toResponse(msg.getSender()) : null)
                 .content(msg.getContent())
                 .type(msg.getType())

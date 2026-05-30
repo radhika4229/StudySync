@@ -38,12 +38,12 @@ public class StudySessionService {
     private final UserMapper userMapper;
 
     @Transactional
-    public SessionResponse startSession(String userId, String roomId) {
+    public SessionResponse startSession(long userId, long roomId) {
         User user = findUser(userId);
         StudyRoom room = findRoom(roomId);
 
         // Check if session already active
-        sessionRepository.findByRoomAndStatus(room, StudySession.SessionStatus.ACTIVE)
+        sessionRepository.findByRoomAndStatus(room, SessionStatus.ACTIVE)
                 .ifPresent(s -> { throw new RuntimeException("Session already active in this room"); });
 
         StudySession session = StudySession.builder()
@@ -67,7 +67,7 @@ public class StudySessionService {
                 notificationService.createNotification(
                         member, "Session Started! 🚀",
                         user.getUsername() + " started a session in " + room.getName(),
-                        NotificationType.SESSION_START, roomId
+                        NotificationType.SESSION_START,  String.valueOf(roomId)
                 );
             }
         });
@@ -76,8 +76,9 @@ public class StudySessionService {
     }
 
     @Transactional
-    public SessionResponse endSession(String userId, String sessionId, String notes) {
+    public SessionResponse endSession(Long userId, String sessionId, String notes) {
         User user = findUser(userId);
+
         StudySession session = sessionRepository.findById(sessionId)
                 .orElseThrow(() -> new RuntimeException("Session not found"));
 
@@ -89,31 +90,41 @@ public class StudySessionService {
         session.setStatus(SessionStatus.COMPLETED);
         session.setNotes(notes);
 
-        long minutes = Duration.between(session.getStartTime(), session.getEndTime()).toMinutes();
+        long minutes = Duration.between(
+                session.getStartTime(),
+                session.getEndTime()
+        ).toMinutes();
+
         session.setDurationMinutes(minutes);
 
         session = sessionRepository.save(session);
 
-        // Award XP and update streaks for all participants
         for (User participant : session.getParticipants()) {
             int xpEarned = (int) (minutes / 10) * 5 + 20;
-            gamificationService.awardXP(participant, xpEarned, "Completed study session");
+            gamificationService.awardXP(
+                    participant,
+                    xpEarned,
+                    "Completed study session"
+            );
             gamificationService.updateStudyStreak(participant);
             gamificationService.updateStudyStats(participant, minutes);
         }
 
-        // Broadcast session end
         messagingTemplate.convertAndSend(
                 "/topic/room/" + session.getRoom().getId() + "/session",
-                Map.of("type", "SESSION_ENDED", "session", sessionMapper.toResponse(session))
+                Map.of(
+                        "type", "SESSION_ENDED",
+                        "session", sessionMapper.toResponse(session)
+                )
         );
 
         return sessionMapper.toResponse(session);
     }
 
     @Transactional
-    public SessionResponse joinSession(String userId, String sessionId) {
+    public SessionResponse joinSession(Long userId, String sessionId) {
         User user = findUser(userId);
+
         StudySession session = sessionRepository.findById(sessionId)
                 .orElseThrow(() -> new RuntimeException("Session not found"));
 
@@ -122,31 +133,34 @@ public class StudySessionService {
 
         messagingTemplate.convertAndSend(
                 "/topic/room/" + session.getRoom().getId() + "/session",
-                Map.of("type", "USER_JOINED_SESSION", "userId", userId, "username", user.getUsername())
+                Map.of(
+                        "type", "USER_JOINED_SESSION",
+                        "userId", userId,
+                        "username", user.getUsername()
+                )
         );
 
         return sessionMapper.toResponse(session);
     }
-
-    public Optional<SessionResponse> getActiveSession(String roomId) {
+    public Optional<SessionResponse> getActiveSession(Long roomId) {
         StudyRoom room = findRoom(roomId);
-        return sessionRepository.findByRoomAndStatus(room, StudySession.SessionStatus.ACTIVE)
+        return sessionRepository.findByRoomAndStatus(room, SessionStatus.ACTIVE)
                 .map(sessionMapper::toResponse);
     }
 
     public List<SessionResponse> getRoomSessions(String roomId) {
-        StudyRoom room = findRoom(roomId);
+        StudyRoom room = findRoom(Long.valueOf(roomId));
         return sessionRepository.findByRoomOrderByCreatedAtDesc(room)
                 .stream().map(sessionMapper::toResponse).toList();
     }
 
-    private User findUser(String id) {
+    private User findUser(Long id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
     }
 
-    private StudyRoom findRoom(String id) {
-        return roomRepository.findById(id)
+    private StudyRoom findRoom(Long id) {
+        return roomRepository.findById(String.valueOf(id))
                 .orElseThrow(() -> new RuntimeException("Room not found"));
     }
 }

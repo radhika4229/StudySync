@@ -55,7 +55,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                     if (StringUtils.hasText(authHeader) && authHeader.startsWith("Bearer ")) {
                         String token = authHeader.substring(7);
                         if (tokenProvider.validateToken(token)) {
-                            String userId = tokenProvider.getUserIdFromToken(token);
+                          Long userId = tokenProvider.getUserIdFromToken(token);
                             UserDetails userDetails = userDetailsService.loadUserById(userId);
                             UsernamePasswordAuthenticationToken authentication =
                                     new UsernamePasswordAuthenticationToken(

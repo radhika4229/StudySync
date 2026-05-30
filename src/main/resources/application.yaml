@@ -7,8 +7,8 @@ spring:
 
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/studyroom}
-    username: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD:postgres}
+    username: postgres
+    password: newpassword
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -69,7 +69,7 @@ spring:
 
 app:
   jwt:
-    secret: ${JWT_SECRET:your-super-secret-jwt-key-minimum-256-bits-long-change-in-production}
+    secret:  StudySyncSecretKeyStudySyncSecretKey123456789
     expiration: 86400000        # 24 hours
     refresh-expiration: 604800000  # 7 days
 

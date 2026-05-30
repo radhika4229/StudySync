@@ -86,6 +86,8 @@ public class AuthService {
 
     @Transactional
     public AuthResponse refreshToken(String token) {
+        System.out.println("SERVICE TOKEN = [" + token + "]");
+token=token.trim();
         RefreshToken refreshToken = refreshTokenRepository.findByToken(token)
                 .orElseThrow(() -> new RuntimeException("Refresh token not found"));
 
@@ -105,7 +107,7 @@ public class AuthService {
     }
 
     @Transactional
-    public void logout(String userId) {
+    public void logout(Long userId) {
         userRepository.findById(userId).ifPresent(user ->
                 refreshTokenRepository.deleteByUser(user));
     }

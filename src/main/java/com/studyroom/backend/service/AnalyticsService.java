@@ -25,9 +25,9 @@ public class AnalyticsService {
     private final StudyRoomRepository roomRepository;
     private final UserRepository userRepository;
 
-    public Map<String, Object> getUserAnalytics(String userId) {
-        Long totalMinutes = sessionRepository.getTotalStudyMinutesByUser(userId);
-        Long totalSessions = sessionRepository.getCompletedSessionCountByUser(userId);
+    public Map<String, Object> getUserAnalytics(Long userId) {
+        Long totalMinutes = sessionRepository.getTotalStudyMinutesByUser(String.valueOf(userId));
+        Long totalSessions = sessionRepository.getCompletedSessionCountByUser(String.valueOf(userId));
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));

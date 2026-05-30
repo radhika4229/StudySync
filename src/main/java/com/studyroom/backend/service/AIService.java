@@ -1,76 +1,70 @@
 package com.studyroom.backend.service;
 
+import com.studyroom.backend.dto.request.AIQueryRequest;
+import com.studyroom.backend.entity.User;
+import com.studyroom.backend.enums.BadgeType;
+import com.studyroom.backend.exception.ResourceNotFoundException;
+import com.studyroom.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.chat.messages.*;
-import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-
+@Slf4j
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class AIService {
 
-    private final ChatClient.Builder chatClientBuilder;
+    private final ChatClient chatClient;       // ✅ Injected from AIConfig
+    private final UserRepository userRepository;
+    private final GamificationService gamificationService;
 
-    public String processQuery(String query, String subject) {
-        ChatClient chatClient = chatClientBuilder.build();
-        String systemPrompt = buildSystemPrompt(subject);
-        try {
-            return chatClient.prompt()
-                    .system(systemPrompt)
-                    .user(query)
-                    .call()
-                    .content();
-        } catch (Exception e) {
-            log.error("AI query failed", e);
-            return "Sorry, AI is currently unavailable. Please try again.";
-        }
+    @Transactional
+    public String processTypedQuery(Long userId, AIQueryRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "User not found with id: " + userId));
+
+        String prompt = buildPrompt(request);
+
+        log.debug("Sending prompt to AI for user id={}: {}", userId, prompt);
+
+        String aiResponse = chatClient.prompt()
+                .user(prompt)
+                .call()
+                .content();
+
+        gamificationService.checkAndAwardBadge(user, BadgeType.AI_EXPLORER);
+
+        log.info("AI query completed successfully for user id={}", userId);
+
+        return aiResponse;
     }
 
-    public String processTypedQuery(AIQueryRequest request) {
-        ChatClient chatClient = chatClientBuilder.build();
-        String prompt = buildPromptByType(request);
+    private String buildPrompt(AIQueryRequest request) {
+        if (request.getQueryType() == null || request.getQueryType().isBlank()) {
+            return request.getQuestion();
+        }
+        return switch (request.getQueryType().toUpperCase()) {
+            case "SUMMARIZE" -> "Summarize the following: " + request.getQuestion();
+            case "EXPLAIN"   -> "Explain in simple terms: " + request.getQuestion();
+            case "QUIZ"      -> "Generate a short quiz based on: " + request.getQuestion();
+            default          -> request.getQuestion();
+        };
+    }
+
+    public String processQuery(String query, String subject) {
         try {
+            String prompt = "Subject: " + subject + "\nQuestion: " + query;
+
             return chatClient.prompt()
-                    .system("You are an intelligent study assistant for students. " +
-                            "Be concise, clear, and educational. Use markdown formatting.")
                     .user(prompt)
                     .call()
                     .content();
         } catch (Exception e) {
-            log.error("AI typed query failed", e);
-            return "Sorry, AI assistant is currently unavailable.";
+            log.error("AI query failed", e);
+            return "AI service is currently unavailable.";
         }
-    }
-
-    private String buildSystemPrompt(String subject) {
-        return String.format(
-                "You are an AI study assistant specialized in %s. " +
-                        "Help students understand concepts, generate quizzes, " +
-                        "summarize notes, and create interview questions. " +
-                        "Be concise, accurate, and educational. Use markdown formatting " +
-                        "for better readability.", subject != null ? subject : "general subjects"
-        );
-    }
-
-    private String buildPromptByType(AIQueryRequest request) {
-        String context = request.getContext() != null ? "\nContext: " + request.getContext() : "";
-        return switch (request.getType()) {
-            case EXPLAIN ->
-                    "Explain the following topic clearly and simply: " + request.getQuery() + context;
-            case GENERATE_QUIZ ->
-                    "Generate 5 multiple choice quiz questions about: " + request.getQuery() +
-                            ". Include answers." + context;
-            case SUMMARIZE_NOTES ->
-                    "Summarize the following notes concisely: " + request.getQuery();
-            case CREATE_INTERVIEW_QUESTIONS ->
-                    "Create 10 interview questions for: " + request.getQuery() +
-                            ". Include expected answers." + context;
-            case GENERAL -> request.getQuery() + context;
-        };
     }
 }

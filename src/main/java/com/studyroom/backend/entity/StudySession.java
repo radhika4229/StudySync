@@ -13,8 +13,8 @@ import java.util.*;
 public class StudySession {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "room_id", nullable = false)
@@ -37,6 +37,7 @@ public class StudySession {
             joinColumns = @JoinColumn(name = "session_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
+
     private Set<User> participants = new HashSet<>();
 
     @Column(length = 2000)

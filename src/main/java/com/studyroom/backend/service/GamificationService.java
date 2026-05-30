@@ -34,8 +34,14 @@ public class GamificationService {
 
         // Notify user
         messagingTemplate.convertAndSendToUser(
-                user.getId(), "/queue/notifications",
-                Map.of("type", "XP_EARNED", "xp", xp, "totalXp", user.getXpPoints(), "reason", reason)
+                user.getUsername(),
+                "/queue/notifications",
+                Map.of(
+                        "type", "XP_EARNED",
+                        "xp", xp,
+                        "totalXp", user.getXpPoints(),
+                        "reason", reason
+                )
         );
     }
 
@@ -105,12 +111,16 @@ public class GamificationService {
         log.info("Badge awarded: {} to {}", type, user.getUsername());
 
         messagingTemplate.convertAndSendToUser(
-                user.getId(), "/queue/notifications",
-                Map.of("type", "BADGE_EARNED", "badge", Map.of(
-                        "name", info.name(),
-                        "description", info.description(),
-                        "icon", info.icon()
-                ))
+                user.getUsername(),
+                "/queue/notifications",
+                Map.of(
+                        "type", "BADGE_EARNED",
+                        "badge", Map.of(
+                                "name", info.name(),
+                                "description", info.description(),
+                                "icon", info.icon()
+                        )
+                )
         );
     }
 

@@ -1,4 +1,5 @@
 package com.studyroom.backend.entity;
+
 import com.studyroom.backend.enums.RoomStatus;
 import com.studyroom.backend.enums.RoomVisibility;
 import jakarta.persistence.*;
@@ -7,7 +8,10 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "study_rooms")
@@ -15,8 +19,8 @@ import java.util.*;
 public class StudyRoom {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @Column(nullable = false)
     private String name;
@@ -53,18 +57,23 @@ public class StudyRoom {
             joinColumns = @JoinColumn(name = "room_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
+    @Builder.Default
     private Set<User> members = new HashSet<>();
 
     @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @Builder.Default
     private List<StudySession> sessions = new ArrayList<>();
 
     @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @Builder.Default
     private List<ChatMessage> messages = new ArrayList<>();
 
     @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @Builder.Default
     private List<Task> tasks = new ArrayList<>();
 
     @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @Builder.Default
     private List<SharedNote> notes = new ArrayList<>();
 
     @CreationTimestamp

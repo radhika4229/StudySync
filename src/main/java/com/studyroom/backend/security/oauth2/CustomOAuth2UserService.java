@@ -1,12 +1,14 @@
 package com.studyroom.backend.security.oauth2;
+import com.studyroom.backend.enums.AuthProvider;
 import com.studyroom.backend.entity.User;
-
+import com.studyroom.backend.enums.Role;
 import com.studyroom.backend.repository.UserRepository;
 import com.studyroom.backend.security.UserPrincipal;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.InternalAuthenticationServiceException;
-import org.springframework.security.oauth2.client.userinfo.*;
+import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
@@ -38,21 +40,21 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         String name;
         String avatarUrl;
         String providerId;
-        User.AuthProvider provider;
+       AuthProvider provider;
 
         if ("google".equals(registrationId)) {
             email = (String) attributes.get("email");
             name = (String) attributes.get("name");
             avatarUrl = (String) attributes.get("picture");
             providerId = (String) attributes.get("sub");
-            provider = User.AuthProvider.GOOGLE;
+            provider = AuthProvider.GOOGLE;
         } else if ("github".equals(registrationId)) {
             email = (String) attributes.get("email");
             name = (String) attributes.get("name");
             if (name == null) name = (String) attributes.get("login");
             avatarUrl = (String) attributes.get("avatar_url");
             providerId = String.valueOf(attributes.get("id"));
-            provider = User.AuthProvider.GITHUB;
+            provider = AuthProvider.GITHUB;
             if (email == null) email = providerId + "@github.com";
         } else {
             throw new OAuth2AuthenticationException("Unsupported provider: " + registrationId);
@@ -62,7 +64,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         final String finalName = name;
         final String finalAvatar = avatarUrl;
         final String finalProviderId = providerId;
-        final User.AuthProvider finalProvider = provider;
+        final AuthProvider finalProvider = provider;
 
         User user = userRepository.findByEmail(email)
                 .map(existing -> {
@@ -79,7 +81,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                             .avatarUrl(finalAvatar)
                             .provider(finalProvider)
                             .providerId(finalProviderId)
-                            .role(User.Role.ROLE_USER)
+                            .role(Role.ROLE_USER)
                             .emailVerified(true)
                             .build();
                     return userRepository.save(newUser);

@@ -13,7 +13,7 @@ public class SessionMapper {
     public SessionResponse toResponse(StudySession session) {
         return SessionResponse.builder()
                 .id(session.getId())
-                .roomId(session.getRoom().getId())
+                .roomId(String.valueOf(String.valueOf(session.getRoom().getId())))
                 .startedBy(userMapper.toResponse(session.getStartedBy()))
                 .startTime(session.getStartTime())
                 .endTime(session.getEndTime())

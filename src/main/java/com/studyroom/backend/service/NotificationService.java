@@ -35,7 +35,7 @@ public class NotificationService {
 
         // Real-time push
         messagingTemplate.convertAndSendToUser(
-                user.getId(), "/queue/notifications",
+                user.getUsername(), "/queue/notifications",
                 Map.of("type", "NOTIFICATION", "notification", Map.of(
                         "id", notification.getId(),
                         "title", title,
@@ -45,22 +45,22 @@ public class NotificationService {
         );
     }
 
-    public List<Notification> getUserNotifications(String userId) {
+    public List<Notification> getUserNotifications(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         return notificationRepository.findByUserOrderByCreatedAtDesc(user);
     }
 
     @Transactional
-    public void markAsRead(String notificationId) {
-        notificationRepository.findById(notificationId).ifPresent(n -> {
+    public void markAsRead(String userId) {
+        notificationRepository.findById(userId).ifPresent(n -> {
             n.setRead(true);
             notificationRepository.save(n);
         });
     }
 
     @Transactional
-    public void markAllAsRead(String userId) {
+    public void markAllAsRead(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         List<Notification> unread = notificationRepository.findByUserAndReadFalse(user);
@@ -68,7 +68,7 @@ public class NotificationService {
         notificationRepository.saveAll(unread);
     }
 
-    public long getUnreadCount(String userId) {
+    public long getUnreadCount(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         return notificationRepository.countByUserAndReadFalse(user);

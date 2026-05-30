@@ -1,19 +1,18 @@
 package com.studyroom.backend.dto.request;
 
-import com.studyroom.backend.enums.AIQueryType;
-import jakarta.validation.constraints.*;
-import lombok.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+import lombok.Getter;
+import lombok.Setter;
 
-@Getter @Setter @NoArgsConstructor @AllArgsConstructor
+@Getter
+@Setter
 public class AIQueryRequest {
-    @NotBlank
-    private String query;
 
-    private String context; // optional room context
+      @NotBlank(message = "Question must not be blank")
+    @Size(max = 2000, message = "Question must not exceed 2000 characters")
+    private String question;
 
-    @NotNull
-    private AIQueryType type;
-
-
+   @Size(max = 50, message = "Query type must not exceed 50 characters")
+    private String queryType;
 }
-
