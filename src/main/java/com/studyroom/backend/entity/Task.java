@@ -1,5 +1,6 @@
 package com.studyroom.backend.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.studyroom.backend.enums.TaskPriority;
 import jakarta.persistence.*;
 import lombok.*;
@@ -18,10 +19,12 @@ public class Task {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "room_id", nullable = false)
+    @JsonIgnore
     private StudyRoom room;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by", nullable = false)
+    @JsonIgnore
     private User createdBy;
 
     @ManyToOne(fetch = FetchType.LAZY)

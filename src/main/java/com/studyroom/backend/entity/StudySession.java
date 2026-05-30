@@ -37,7 +37,7 @@ public class StudySession {
             joinColumns = @JoinColumn(name = "session_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
-
+@Builder.Default
     private Set<User> participants = new HashSet<>();
 
     @Column(length = 2000)

@@ -2,9 +2,11 @@ package com.studyroom.backend.controller;
 
 import com.studyroom.backend.dto.request.CreateTaskRequest;
 import com.studyroom.backend.dto.response.ApiResponse;
+import com.studyroom.backend.dto.response.TaskResponse;
 import com.studyroom.backend.entity.StudyRoom;
 import com.studyroom.backend.entity.Task;
 import com.studyroom.backend.entity.User;
+import com.studyroom.backend.mappers.TaskMapper;
 import com.studyroom.backend.repository.StudyRoomRepository;
 import com.studyroom.backend.repository.TaskRepository;
 import com.studyroom.backend.repository.UserRepository;
@@ -24,6 +26,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class TaskController {
 
+    private final TaskMapper taskMapper;
     private final TaskRepository taskRepository;
     private final StudyRoomRepository roomRepository;
     private final UserRepository userRepository;
@@ -31,19 +34,22 @@ public class TaskController {
 
     @PostMapping("/rooms/{roomId}")
     @Transactional
-    public ResponseEntity<ApiResponse<Task>> createTask(
+    public ResponseEntity<ApiResponse<TaskResponse>> createTask(
             @AuthenticationPrincipal UserPrincipal user,
             @PathVariable String roomId,
             @RequestBody CreateTaskRequest request) {
 
         StudyRoom room = roomRepository.findById(roomId)
                 .orElseThrow(() -> new RuntimeException("Room not found"));
+
         User creator = userRepository.findById(user.getId())
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         User assignee = null;
         if (request.getAssignedToId() != null) {
-            assignee = userRepository.findById(Long.valueOf(request.getAssignedToId())).orElse(null);
+            assignee = userRepository.findById(
+                    Long.valueOf(request.getAssignedToId())
+            ).orElse(null);
         }
 
         Task task = Task.builder()
@@ -55,38 +61,67 @@ public class TaskController {
                 .dueDate(request.getDueDate())
                 .priority(request.getPriority())
                 .build();
+
         task = taskRepository.save(task);
+
+        TaskResponse response = taskMapper.toResponse(task);
 
         messagingTemplate.convertAndSend(
                 "/topic/room/" + roomId + "/tasks",
-                Map.of("type", "TASK_CREATED", "task", task));
+                Map.of(
+                        "type", "TASK_CREATED",
+                        "task", response
+                )
+        );
 
-        return ResponseEntity.ok(ApiResponse.success("Task created", task));
+        return ResponseEntity.ok(
+                ApiResponse.success("Task created", response)
+        );
     }
 
     @PutMapping("/{taskId}/complete")
     @Transactional
-    public ResponseEntity<ApiResponse<Task>> completeTask(
+    public ResponseEntity<ApiResponse<TaskResponse>> completeTask(
             @AuthenticationPrincipal UserPrincipal user,
             @PathVariable String taskId) {
+
         Task task = taskRepository.findById(taskId)
                 .orElseThrow(() -> new RuntimeException("Task not found"));
+
         task.setCompleted(true);
         task = taskRepository.save(task);
 
+        TaskResponse response = taskMapper.toResponse(task);
+
         messagingTemplate.convertAndSend(
                 "/topic/room/" + task.getRoom().getId() + "/tasks",
-                Map.of("type", "TASK_COMPLETED", "taskId", taskId));
+                Map.of(
+                        "type", "TASK_COMPLETED",
+                        "task", response
+                )
+        );
 
-        return ResponseEntity.ok(ApiResponse.success("Task completed", task));
+        return ResponseEntity.ok(
+                ApiResponse.success("Task completed", response)
+        );
     }
 
     @GetMapping("/rooms/{roomId}")
-    public ResponseEntity<ApiResponse<List<Task>>> getRoomTasks(@PathVariable String roomId) {
+    public ResponseEntity<ApiResponse<List<TaskResponse>>> getRoomTasks(
+            @PathVariable String roomId) {
+
         StudyRoom room = roomRepository.findById(roomId)
                 .orElseThrow(() -> new RuntimeException("Room not found"));
-        return ResponseEntity.ok(ApiResponse.success(
-                taskRepository.findByRoomOrderByCreatedAtDesc(room)));
+
+        List<TaskResponse> responses =
+                taskRepository.findByRoomOrderByCreatedAtDesc(room)
+                        .stream()
+                        .map(taskMapper::toResponse)
+                        .toList();
+
+        return ResponseEntity.ok(
+                ApiResponse.success(responses)
+        );
     }
 
     @DeleteMapping("/{taskId}")
@@ -94,8 +129,11 @@ public class TaskController {
     public ResponseEntity<ApiResponse<Void>> deleteTask(
             @AuthenticationPrincipal UserPrincipal user,
             @PathVariable String taskId) {
+
         taskRepository.deleteById(taskId);
-        return ResponseEntity.ok(ApiResponse.success("Task deleted", null));
+
+        return ResponseEntity.ok(
+                ApiResponse.success("Task deleted", null)
+        );
     }
 }
-

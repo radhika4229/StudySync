@@ -50,6 +50,9 @@ public class AIService {
             case "SUMMARIZE" -> "Summarize the following: " + request.getQuestion();
             case "EXPLAIN"   -> "Explain in simple terms: " + request.getQuestion();
             case "QUIZ"      -> "Generate a short quiz based on: " + request.getQuestion();
+            case "INTERVIEW" ->
+                    "Generate 10 Java backend interview questions with answers on: "
+                            + request.getQuestion();
             default          -> request.getQuestion();
         };
     }

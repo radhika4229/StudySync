@@ -60,7 +60,7 @@ Thumbs.db
 # =========================
 # Environment & Secrets
 # =========================
-src/main/java/com/.env
+.env
 .env.*
 application-local.properties
 application-secret.properties

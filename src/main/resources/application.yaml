@@ -7,8 +7,8 @@ spring:
 
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/studyroom}
-    username: postgres
-    password: newpassword
+    username:  ${DB_USERNAME}
+    password:   ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -29,16 +29,19 @@ spring:
             client-secret: ${GOOGLE_CLIENT_SECRET}
             scope: email, profile
             redirect-uri: "{baseUrl}/oauth2/callback/{registrationId}"
+
           github:
             client-id: ${GITHUB_CLIENT_ID}
             client-secret: ${GITHUB_CLIENT_SECRET}
             scope: user:email, read:user
             redirect-uri: "{baseUrl}/oauth2/callback/{registrationId}"
+
         provider:
           google:
             authorization-uri: https://accounts.google.com/o/oauth2/v2/auth
             token-uri: https://oauth2.googleapis.com/token
             user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
+
           github:
             authorization-uri: https://github.com/login/oauth/authorize
             token-uri: https://github.com/login/oauth/access_token
@@ -56,11 +59,10 @@ spring:
           starttls:
             enable: true
 
-  # Spring AI - OpenRouter (OpenAI-compatible)
   ai:
     openai:
       api-key: ${OPENROUTER_API_KEY}
-      base-url: https://openrouter.ai/api/v1
+      base-url: https://openrouter.ai/api
       chat:
         options:
           model: openai/gpt-4o-mini
@@ -69,9 +71,9 @@ spring:
 
 app:
   jwt:
-    secret:  StudySyncSecretKeyStudySyncSecretKey123456789
-    expiration: 86400000        # 24 hours
-    refresh-expiration: 604800000  # 7 days
+    secret: ${JWT_SECRET}
+    expiration: 86400000
+    refresh-expiration: 604800000
 
   oauth2:
     authorized-redirect-uris:
