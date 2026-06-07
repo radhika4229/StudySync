@@ -1,0 +1,1 @@
+import{c,d as t}from"./index-CLo0Nx1v.js";const e=[["path",{d:"M12 3q1 4 4 6.5t3 5.5a1 1 0 0 1-14 0 5 5 0 0 1 1-3 1 1 0 0 0 5 0c0-2-1.5-3-1.5-5q0-2 2.5-4",key:"1slcih"}]],o=c("flame",e),s=a=>a?.data!==void 0?a.data:a,i={me:async()=>{const{data:a}=await t.get("/analytics/me");return s(a)}};export{o as F,i as a};

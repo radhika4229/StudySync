@@ -7,6 +7,11 @@ export default defineConfig({
     },
   },
   tanstackStart: {
-    server: { port: 5173 },
+    server: {
+      entry: "server",
+    },
+  },
+  nitro: {
+    preset: "vercel",
   },
 });
