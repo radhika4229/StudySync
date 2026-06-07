@@ -3,6 +3,7 @@ package com.studyroom.backend.service;
 import com.studyroom.backend.dto.request.LoginRequest;
 import com.studyroom.backend.dto.request.RegisterRequest;
 import com.studyroom.backend.dto.response.AuthResponse;
+import com.studyroom.backend.dto.response.UserResponse;
 import com.studyroom.backend.entity.RefreshToken;
 import com.studyroom.backend.entity.User;
 import com.studyroom.backend.enums.AuthProvider;
@@ -123,4 +124,12 @@ token=token.trim();
 
         return refreshTokenRepository.save(refreshToken).getToken();
     }
+    public UserResponse getCurrentUser(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        return userMapper.toResponse(user);
+    }
+
+
 }

@@ -14,11 +14,11 @@ import com.studyroom.backend.mappers.UserMapper;
 import com.studyroom.backend.repository.ChatMessageRepository;
 import com.studyroom.backend.repository.StudyRoomRepository;
 import com.studyroom.backend.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
@@ -39,14 +39,13 @@ public class StudyRoomService {
 
     @Transactional
     public RoomResponse createRoom(Long userId, CreateRoomRequest request) {
-        User owner = findUser(userId);
 
-        String roomCode = generateUniqueRoomCode();
+        User owner = findUser(userId);
 
         StudyRoom room = StudyRoom.builder()
                 .name(request.getName())
                 .description(request.getDescription())
-                .roomCode(roomCode)
+                .roomCode(generateUniqueRoomCode())
                 .subject(request.getSubject())
                 .topic(request.getTopic())
                 .visibility(request.getVisibility())
@@ -58,38 +57,51 @@ public class StudyRoomService {
                 .build();
 
         room.getMembers().add(owner);
+
         room = roomRepository.save(room);
 
-        // Award XP for creating a room
+        log.info("Room created: {} by user: {}",
+                room.getRoomCode(),
+                owner.getUsername());
+
         gamificationService.awardXP(owner, 10, "Created a study room");
         gamificationService.checkAndAwardBadge(owner, BadgeType.FIRST_ROOM);
 
-        log.info("Room created: {} by user: {}", room.getRoomCode(), owner.getUsername());
         return roomMapper.toResponse(room);
     }
 
     @Transactional
     public RoomResponse joinRoom(Long userId, String roomCode, String password) {
+
         User user = findUser(userId);
+
         StudyRoom room = roomRepository.findByRoomCode(roomCode)
                 .orElseThrow(() -> new RuntimeException("Room not found"));
 
-        if (room.getMembers().size() >= room.getMaxParticipants()) {
-            throw new RuntimeException("Room is full");
+        validateRoomCapacity(room);
+
+        validateRoomPassword(room, password);
+
+        boolean alreadyMember = room.getMembers().stream()
+                .anyMatch(member -> member.getId().equals(userId));
+
+        if (alreadyMember) {
+            return roomMapper.toResponse(room);
         }
 
-        if (room.isPasswordProtected() &&
-                !room.getRoomPassword().equals(password)) {
-            throw new RuntimeException("Invalid room password");
+        if (room.getStatus() == RoomStatus.INACTIVE) {
+            room.setStatus(RoomStatus.ACTIVE);
         }
 
         room.getMembers().add(user);
+
         room = roomRepository.save(room);
 
-        // Notify room members
-        broadcastSystemMessage(room, user.getUsername() + " joined the room 🎉");
+        broadcastSystemMessage(
+                room,
+                user.getUsername() + " joined the room 🎉"
+        );
 
-        // Award XP
         gamificationService.awardXP(user, 5, "Joined a study room");
         gamificationService.checkAndAwardBadge(user, BadgeType.TEAM_PLAYER);
 
@@ -98,15 +110,51 @@ public class StudyRoomService {
 
     @Transactional
     public void leaveRoom(Long userId, String roomId) {
+
         User user = findUser(userId);
+
         StudyRoom room = findRoom(Long.valueOf(roomId));
 
         room.getMembers().remove(user);
+
+        if (room.getMembers().isEmpty()) {
+            room.setStatus(RoomStatus.INACTIVE);
+        }
+
         roomRepository.save(room);
 
-        broadcastSystemMessage(room, user.getUsername() + " left the room");
+        broadcastSystemMessage(
+                room,
+                user.getUsername() + " left the room"
+        );
     }
 
+    private void validateRoomCapacity(StudyRoom room) {
+
+        if (room.getMembers().size() >= room.getMaxParticipants()) {
+            throw new RuntimeException("Room is full");
+        }
+    }
+
+    private void validateRoomPassword(
+            StudyRoom room,
+            String password
+    ) {
+
+        if (!room.isPasswordProtected()) {
+            return;
+        }
+
+        String roomPassword = room.getRoomPassword();
+
+        if (roomPassword == null || roomPassword.isBlank()) {
+            throw new RuntimeException("Room password is not configured");
+        }
+
+        if (!roomPassword.equals(password)) {
+            throw new RuntimeException("Invalid room password");
+        }
+    }
     public List<RoomResponse> getPublicRooms() {
         return roomRepository.findByVisibilityAndStatus(
                         RoomVisibility.PUBLIC,RoomStatus.ACTIVE)
@@ -119,8 +167,19 @@ public class StudyRoomService {
         return rooms.stream().map(roomMapper::toResponse).toList();
     }
 
-    public RoomResponse getRoomById(String roomId) {
-        return roomMapper.toResponse(findRoom(Long.valueOf(roomId)));
+    public RoomResponse getRoomById(Long userId, String roomId) {
+
+        StudyRoom room = findRoom(Long.valueOf(roomId));
+
+        if (
+                room.getVisibility() == RoomVisibility.PRIVATE &&
+                        room.getMembers().stream()
+                                .noneMatch(member -> member.getId().equals(userId))
+        ) {
+            throw new RuntimeException("Access denied");
+        }
+
+        return roomMapper.toResponse(room);
     }
 
     public RoomResponse getRoomByCode(String roomCode) {

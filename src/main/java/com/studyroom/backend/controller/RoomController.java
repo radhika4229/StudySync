@@ -40,8 +40,15 @@ public class RoomController {
     }
 
     @GetMapping("/{roomId}")
-    public ResponseEntity<ApiResponse<RoomResponse>> getRoom(@PathVariable String roomId) {
-        return ResponseEntity.ok(ApiResponse.success(roomService.getRoomById(roomId)));
+    public ResponseEntity<ApiResponse<RoomResponse>> getRoom(
+            @AuthenticationPrincipal UserPrincipal user,
+            @PathVariable String roomId) {
+
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        roomService.getRoomById(user.getId(), roomId)
+                )
+        );
     }
 
     @GetMapping("/code/{roomCode}")

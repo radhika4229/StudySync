@@ -7,8 +7,8 @@ spring:
 
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/studyroom}
-    username:  ${DB_USERNAME}
-    password:   ${DB_PASSWORD}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -20,32 +20,34 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
 
+
   security:
-    oauth2:
-      client:
-        registration:
-          google:
-            client-id: ${GOOGLE_CLIENT_ID}
-            client-secret: ${GOOGLE_CLIENT_SECRET}
-            scope: email, profile
-            redirect-uri: "{baseUrl}/oauth2/callback/{registrationId}"
+      oauth2:
+        client:
+          registration:
 
-          github:
-            client-id: ${GITHUB_CLIENT_ID}
-            client-secret: ${GITHUB_CLIENT_SECRET}
-            scope: user:email, read:user
-            redirect-uri: "{baseUrl}/oauth2/callback/{registrationId}"
+            google:
+              client-id: ${GOOGLE_CLIENT_ID}
+              client-secret: ${GOOGLE_CLIENT_SECRET}
+              scope:
+                - email
+                - profile
+              redirect-uri: "{baseUrl}/oauth2/callback/{registrationId}"
 
-        provider:
-          google:
-            authorization-uri: https://accounts.google.com/o/oauth2/v2/auth
-            token-uri: https://oauth2.googleapis.com/token
-            user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
+            github:
+              client-id: ${GITHUB_CLIENT_ID}
+              client-secret: ${GITHUB_CLIENT_SECRET}
+              scope:
+                - read:user
+                - user:email
+              redirect-uri: "{baseUrl}/oauth2/callback/{registrationId}"
 
-          github:
-            authorization-uri: https://github.com/login/oauth/authorize
-            token-uri: https://github.com/login/oauth/access_token
-            user-info-uri: https://api.github.com/user
+          provider:
+            google:
+              authorization-uri: https://accounts.google.com/o/oauth2/v2/auth
+              token-uri: https://oauth2.googleapis.com/token
+              user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
+
 
   mail:
     host: ${MAIL_HOST:smtp.gmail.com}
@@ -71,7 +73,7 @@ spring:
 
 app:
   jwt:
-    secret: ${JWT_SECRET}
+    secret: ${JWT_SECRET:dev-secret-key}
     expiration: 86400000
     refresh-expiration: 604800000
 
@@ -83,10 +85,19 @@ app:
   frontend-url: ${FRONTEND_URL:http://localhost:3000}
 
 server:
-  port: ${PORT:8080}
+  port: 8080
 
 logging:
   level:
     com.studyroom: DEBUG
     org.springframework.security: INFO
     org.springframework.ai: DEBUG
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: always

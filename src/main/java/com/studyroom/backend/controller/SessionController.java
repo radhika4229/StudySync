@@ -55,4 +55,15 @@ public class SessionController {
             @PathVariable String roomId) {
         return ResponseEntity.ok(ApiResponse.success(sessionService.getRoomSessions(roomId)));
     }
+    @DeleteMapping("/{sessionId}/leave")
+    public ResponseEntity<ApiResponse<SessionResponse>> leaveSession(
+            @AuthenticationPrincipal UserPrincipal user,
+            @PathVariable String sessionId) {
+
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        sessionService.leaveSession(user.getId(), sessionId)
+                )
+        );
+    }
 }

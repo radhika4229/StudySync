@@ -163,4 +163,19 @@ public class StudySessionService {
         return roomRepository.findById(String.valueOf(id))
                 .orElseThrow(() -> new RuntimeException("Room not found"));
     }
+
+    @Transactional
+    public SessionResponse leaveSession(Long id, String sessionId) {
+
+        User user = findUser(id);
+
+        StudySession session = sessionRepository.findById(sessionId)
+                .orElseThrow(() -> new RuntimeException("Session not found"));
+
+        session.getParticipants().remove(user);
+
+        session = sessionRepository.save(session);
+
+        return sessionMapper.toResponse(session);
+    }
 }

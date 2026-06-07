@@ -54,8 +54,11 @@ public class AuthController {
     public ResponseEntity<ApiResponse<UserResponse>> getCurrentUser(
             @AuthenticationPrincipal UserPrincipal principal) {
 
-        return ResponseEntity.ok(ApiResponse.success(null));
+        UserResponse user = authService.getCurrentUser(principal.getId());
 
+        return ResponseEntity.ok(
+                ApiResponse.success(user)
+        );
     }
 }
 

@@ -38,6 +38,9 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
     protected String determineTargetUrl(HttpServletRequest request,
                                         HttpServletResponse response,
                                         Authentication authentication) {
+
+        log.info("SUCCESS HANDLER CALLED");
+        log.info("USER = {}", authentication.getName());
         String redirectUri = request.getParameter("redirect_uri");
         List<String> authorizedRedirectUris = appProperties.getOauth2().getAuthorizedRedirectUris();
 
