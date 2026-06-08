@@ -3,7 +3,8 @@ import { Github } from "lucide-react";
 import { API_BASE_URL } from "@/services/api";
 
 const OAUTH_BASE = API_BASE_URL.replace(/\/api\/?$/, "");
-const REDIRECT_URI = "http://localhost:8081/oauth2/redirect";
+const REDIRECT_URI =
+    `${window.location.origin}/oauth2/redirect`;
 
 export function OAuthButtons() {
   const google = `${OAUTH_BASE}/oauth2/authorize/google?redirect_uri=${encodeURIComponent(REDIRECT_URI)}`;
