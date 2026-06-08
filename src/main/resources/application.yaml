@@ -72,17 +72,12 @@ spring:
           max-tokens: 1000
 
 app:
-  jwt:
-    secret: ${JWT_SECRET:dev-secret-key}
-    expiration: 86400000
-    refresh-expiration: 604800000
-
   oauth2:
     authorized-redirect-uris:
-      - ${FRONTEND_URL:http://localhost:3000}/oauth2/redirect
+      - ${FRONTEND_URL:https://study-sync-app-ashy.vercel.app}/oauth2/redirect
       - http://localhost:3000/oauth2/redirect
 
-  frontend-url: ${FRONTEND_URL:http://localhost:3000}
+  frontend-url: ${FRONTEND_URL:https://study-sync-app-ashy.vercel.app}
 
 server:
   port: ${PORT:8080}
