@@ -246,7 +246,7 @@ PostgreSQL 14+
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/yourusername/study-room-platform.git
+https://github.com/radhika4229/StudySync.git
 cd study-room-platform
 ```
 
@@ -465,9 +465,9 @@ Authorized redirect URI: https://your-backend.onrender.com/oauth2/callback/githu
 ## 👨‍💻 Author
 
 **Your Name**
-- GitHub: [@yourusername](https://github.com/yourusername)
-- LinkedIn: [yourlinkedin](https://linkedin.com/in/yourname)
-- Email: your@email.com
+- GitHub: [@radhika4229](https://github.com/radhika4229)
+- LinkedIn: [radhika-sishodiya](https://www.linkedin.com/in/radhika-sishodiya/)
+- Email: sishodiyaradhika@gmail.com
 
 ---
 
